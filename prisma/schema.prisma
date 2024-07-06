@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brands    Brand[]
+
+  @@index([id])
+  @@index([name])
+}
+
+model Brand {
+  id         String    @id @default(cuid())
+  categoryId String
+  name       String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  category   Category  @relation(fields: [categoryId], references: [id])
+  products   Product[]
+
+  @@index([categoryId])
+  @@index([name])
+}
+
+model Product {
+  id           String    @id @default(cuid())
+  brandId      String
+  name         String    @unique
+  description  String?
+  refNo        String    @unique
+  thumbnailUrl String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  brand        Brand     @relation(fields: [brandId], references: [id])
+  listings     Listing[]
+
+  @@index([brandId])
+  @@index([name])
+  @@index([refNo])
+}
+
+model Listing {
+  id        String           @id @default(cuid())
+  productId String
+  currency  Currency
+  price     Float
+  year      String
+  box       Boolean
+  papers    Boolean
+  location  ListingLocation
+  condition ListingCondition
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  product   Product          @relation(fields: [productId], references: [id])
+  images    ListingImg[]
+
+  @@index([productId])
+  @@index([year])
+  @@index([price])
+}
+
+model ListingImg {
+  id        String   @id @default(cuid())
+  listingId String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  listing   Listing  @relation(fields: [listingId], references: [id])
+
+  @@index([listingId])
+}
+
+enum Currency {
+  USD
+  HKD
+}
+
+enum ListingLocation {
+  IN_BOUTIQUE
+  ONLINE
+}
+
+enum ListingCondition {
+  UNWORN
+  EXCELLENT
+  VERY_GOOD
+  FAIR
+}
